@@ -8,6 +8,7 @@ export default class SpaceBG{
     static distanceDivider = 3;
     static maxRadius = 3;
     static outScreenGap = 150;
+    static speedMultiplier = .3;
 
     //primary entry point for background initialization
     static start = _ => {
@@ -63,7 +64,8 @@ export default class SpaceBG{
             return Math.ceil(r * length);
         }
 
-        return r > .5 ? r : -r;
+        //evaluate stars speed
+        return (r > .5 ? r : -r) * SpaceBG.speedMultiplier;
     }
 
     resizeCanvas = _ => {
@@ -81,7 +83,7 @@ export default class SpaceBG{
 
     //regenerate balls, if some of then locate out of visible part of display
     fillBalls = _ => {
-        let countDiff = SpaceBG.ballsCount -this.balls.length;
+        let countDiff = SpaceBG.ballsCount - this.balls.length;
         if(countDiff > 0){
             while(countDiff--){
                 this.balls.push(this.generateBall());
@@ -114,16 +116,12 @@ export default class SpaceBG{
                     this.ctx.lineTo(balls[j].coordX, balls[j].coordY);
                     this.ctx.stroke();
                     this.ctx.closePath();
-
                 }
             }
         });
     }
 
     getDistance = (a, b) => {
-        if(b === undefined){
-            console.log(this);
-        }
         const x = (a.coordX - b.coordX) ** 2;
         const y = (a.coordY - b.coordY) ** 2;
 
