@@ -67,7 +67,8 @@ export default class SpaceBG{
         return {
             coordX : 0,
             coordY : 0,
-            radius : this.random(SpaceBG.maxRadius),
+            speedX : 0,
+            speedY : 0,
             isBall : false
         };        
     }
@@ -109,11 +110,13 @@ export default class SpaceBG{
 
     renderBalls = _ => {
         this.balls.forEach(ball => {
-            this.ctx.fillStyle = `rgba(${SpaceBG.ballColor},${SpaceBG.ballOpacity})`;
-            this.ctx.beginPath();
-            this.ctx.arc(ball.coordX, ball.coordY, ball.radius, 0, Math.PI * 2, true);
-            this.ctx.closePath();
-            this.ctx.fill();
+            if(ball.isBall){
+                this.ctx.fillStyle = `rgba(${SpaceBG.ballColor},${SpaceBG.ballOpacity})`;
+                this.ctx.beginPath();
+                this.ctx.arc(ball.coordX, ball.coordY, ball.radius, 0, Math.PI * 2, true);
+                this.ctx.closePath();
+                this.ctx.fill();
+            }            
         });
     }
 
