@@ -25,10 +25,17 @@ export default class SpaceBG{
         
         this.balls = (new Array(SpaceBG.ballsCount)).fill(0).map(_=>this.generateBall());
         //We use a combination of fill and map methods, as map skips empty array elements (holes)
+        this.mouseStar = this.generateBall(false);
+        this.balls.push(this.mouseStar);
+        //generate star for mouse
 
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas.addEventListener('mouseleave', this.handleMouseOut);
 
         window.addEventListener('resize', this.resizeCanvas);
         window.requestAnimationFrame(this.render);
+
+
     }
 
     render = _ => {
@@ -45,15 +52,24 @@ export default class SpaceBG{
         window.requestAnimationFrame(this.render);
     }
 
-    generateBall = _ => {
+    generateBall = (isStar = true) => {
+        if(isStar){
+            return {
+                coordX : this.random(this.cWidth),
+                coordY : this.random(this.cHeight),
+                radius : this.random(SpaceBG.maxRadius),
+                speedX : this.random(),
+                speedY : this.random(),
+                isBall : true
+            };
+        }
+
         return {
-            coordX : this.random(this.cWidth),
-            coordY : this.random(this.cHeight),
+            coordX : 0,
+            coordY : 0,
             radius : this.random(SpaceBG.maxRadius),
-            speedX : this.random(),
-            speedY : this.random(),
-            isBall : true
-        };
+            isBall : false
+        };        
     }
 
     //return random value, using parameter length
@@ -93,19 +109,20 @@ export default class SpaceBG{
 
     renderBalls = _ => {
         this.balls.forEach(ball => {
-            if(ball.isBall){
-                this.ctx.fillStyle = `rgba(${SpaceBG.ballColor},${SpaceBG.ballOpacity})`;
-                this.ctx.beginPath();
-                this.ctx.arc(ball.coordX, ball.coordY, ball.radius, 0, Math.PI * 2, true);
-                this.ctx.closePath();
-                this.ctx.fill();
-            }
+            this.ctx.fillStyle = `rgba(${SpaceBG.ballColor},${SpaceBG.ballOpacity})`;
+            this.ctx.beginPath();
+            this.ctx.arc(ball.coordX, ball.coordY, ball.radius, 0, Math.PI * 2, true);
+            this.ctx.closePath();
+            this.ctx.fill();
         });
     }
 
     renderLines = _ => {
+        const ballsLen = this.balls.length;
+        //in fact, we have +1 star in the sky. This specific star is mouse
+
         this.balls.forEach((ball, i, balls) => {
-            for(let j = i + 1; j < SpaceBG.ballsCount; j++){
+            for(let j = i + 1; j < ballsLen; j++){
                 const dist = this.getDistance(ball, balls[j]) / this.distanceLimit;
                 if(dist < 1){
                     const divider = 1 - dist;
@@ -134,11 +151,22 @@ export default class SpaceBG{
             ball.coordY += ball.speedY;
 
             return (
+                !ball.isBall ||
                 ball.coordX > -SpaceBG.outScreenGap &&
                 ball.coordY > -SpaceBG.outScreenGap &&
                 ball.coordX < this.screenXMax &&
                 ball.coordY < this.screenYMax
                 );
         });
+    }
+
+    handleMouseMove = ev => {
+        this.mouseStar.coordX = ev.pageX;
+        this.mouseStar.coordY = ev.pageY;
+    }
+
+    handleMouseOut = _ => {
+        this.mouseStar.coordX = 0;
+        this.mouseStar.coordY = 0;
     }
 }
