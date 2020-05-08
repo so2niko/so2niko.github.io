@@ -2,10 +2,10 @@ export default class SpaceBG{
     //static link to initial statement
     static entity = 0;
     static canvasSelector = '.canvas-bg';
-    static ballsCount = 100;
-    static ballColor = '255,255,255';
-    static ballOpacity = '0.6';
-    static distanceDivider = 3;
+    static starCount = 150;
+    static starColor = '255,255,255';
+    static starOpacity = '0.6';
+    static distanceDivider = 5;
     static maxRadius = 3;
     static outScreenGap = 150;
     static speedMultiplier = .3;
@@ -14,7 +14,6 @@ export default class SpaceBG{
     static start = _ => {
         SpaceBG.entity = new SpaceBG();
         SpaceBG.entity.initial();
-        console.log(SpaceBG.entity);
     }
 
     initial = _ => {
@@ -23,10 +22,10 @@ export default class SpaceBG{
         
         this.resizeCanvas();
         
-        this.balls = (new Array(SpaceBG.ballsCount)).fill(0).map(_=>this.generateBall());
+        this.stars = (new Array(SpaceBG.starCount)).fill(0).map(_=>this.generateStar());
         //We use a combination of fill and map methods, as map skips empty array elements (holes)
-        this.mouseStar = this.generateBall(false);
-        this.balls.push(this.mouseStar);
+        this.mouseStar = this.generateStar(false);
+        this.stars.push(this.mouseStar);
         //generate star for mouse
 
         this.canvas.addEventListener('mousemove', this.handleMouseMove);
@@ -34,25 +33,23 @@ export default class SpaceBG{
 
         window.addEventListener('resize', this.resizeCanvas);
         window.requestAnimationFrame(this.render);
-
-
     }
 
     render = _ => {
         this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
 
-        this.fillBalls();
+        this.fillStars();
 
-        this.renderBalls();
+        this.renderStars();
 
         this.renderLines();
 
-        this.updateBalls();
+        this.updateStars();
 
         window.requestAnimationFrame(this.render);
     }
 
-    generateBall = (isStar = true) => {
+    generateStar = (isStar = true) => {
         if(isStar){
             return {
                 coordX : this.random(this.cWidth),
@@ -60,7 +57,7 @@ export default class SpaceBG{
                 radius : this.random(SpaceBG.maxRadius),
                 speedX : this.random(),
                 speedY : this.random(),
-                isBall : true
+                isStar : true
             };
         }
 
@@ -69,7 +66,7 @@ export default class SpaceBG{
             coordY : 0,
             speedX : 0,
             speedY : 0,
-            isBall : false
+            isStar : false
         };        
     }
 
@@ -98,22 +95,22 @@ export default class SpaceBG{
         this.distanceLimit = this.cHeight / SpaceBG.distanceDivider;
     }
 
-    //regenerate balls, if some of then locate out of visible part of display
-    fillBalls = _ => {
-        let countDiff = SpaceBG.ballsCount - this.balls.length;
+    //regenerate stars, if some of then locate out of visible part of display
+    fillStars = _ => {
+        let countDiff = SpaceBG.starCount - this.stars.length;
         if(countDiff > 0){
             while(countDiff--){
-                this.balls.push(this.generateBall());
+                this.stars.push(this.generateStar());
             }
         }
     }
 
-    renderBalls = _ => {
-        this.balls.forEach(ball => {
-            if(ball.isBall){
-                this.ctx.fillStyle = `rgba(${SpaceBG.ballColor},${SpaceBG.ballOpacity})`;
+    renderStars = _ => {
+        this.stars.forEach(star => {
+            if(star.isStar){
+                this.ctx.fillStyle = `rgba(${SpaceBG.starColor},${SpaceBG.starOpacity})`;
                 this.ctx.beginPath();
-                this.ctx.arc(ball.coordX, ball.coordY, ball.radius, 0, Math.PI * 2, true);
+                this.ctx.arc(star.coordX, star.coordY, star.radius, 0, Math.PI * 2, true);
                 this.ctx.closePath();
                 this.ctx.fill();
             }            
@@ -121,19 +118,19 @@ export default class SpaceBG{
     }
 
     renderLines = _ => {
-        const ballsLen = this.balls.length;
-        //in fact, we have +1 star in the sky. This specific star is mouse
+        const starsArrLen = this.stars.length;
+        //in fact, we have +1 star in the sky. This specific star is a mouse
 
-        this.balls.forEach((ball, i, balls) => {
-            for(let j = i + 1; j < ballsLen; j++){
-                const dist = this.getDistance(ball, balls[j]) / this.distanceLimit;
+        this.stars.forEach((star, i, stars) => {
+            for(let j = i + 1; j < starsArrLen; j++){
+                const dist = this.getDistance(star, stars[j]) / this.distanceLimit;
                 if(dist < 1){
                     const divider = 1 - dist;
-                    this.ctx.strokeStyle = `rgba(${SpaceBG.ballColor},${divider})`;
+                    this.ctx.strokeStyle = `rgba(${SpaceBG.starColor},${divider})`;
                     this.ctx.lineWidth = divider;
                     this.ctx.beginPath();
-                    this.ctx.moveTo(ball.coordX, ball.coordY);
-                    this.ctx.lineTo(balls[j].coordX, balls[j].coordY);
+                    this.ctx.moveTo(star.coordX, star.coordY);
+                    this.ctx.lineTo(stars[j].coordX, stars[j].coordY);
                     this.ctx.stroke();
                     this.ctx.closePath();
                 }
@@ -148,17 +145,17 @@ export default class SpaceBG{
         return Math.sqrt(x + y);
     }
 
-    updateBalls = _ => {
-        this.balls = this.balls.filter(ball => {
-            ball.coordX += ball.speedX;
-            ball.coordY += ball.speedY;
+    updateStars = _ => {
+        this.stars = this.stars.filter(star => {
+            star.coordX += star.speedX;
+            star.coordY += star.speedY;
 
             return (
-                !ball.isBall ||
-                ball.coordX > -SpaceBG.outScreenGap &&
-                ball.coordY > -SpaceBG.outScreenGap &&
-                ball.coordX < this.screenXMax &&
-                ball.coordY < this.screenYMax
+                !star.isStar ||
+                star.coordX > -SpaceBG.outScreenGap &&
+                star.coordY > -SpaceBG.outScreenGap &&
+                star.coordX < this.screenXMax &&
+                star.coordY < this.screenYMax
                 );
         });
     }
