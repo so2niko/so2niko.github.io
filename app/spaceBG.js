@@ -7,6 +7,7 @@ export default class SpaceBG{
     static ballOpacity = '0.6';
     static distanceDivider = 3;
     static maxRadius = 3;
+    static outScreenGap = 150;
 
     //primary entry point for background initialization
     static start = _ => {
@@ -38,7 +39,7 @@ export default class SpaceBG{
 
         this.renderLines();
 
-        //updateBalls
+        this.updateBalls();
 
         window.requestAnimationFrame(this.render);
     }
@@ -72,12 +73,15 @@ export default class SpaceBG{
         this.canvas.height = this.cHeight;
         this.canvas.width = this.cWidth;
 
+        this.screenXMax = this.cWidth + SpaceBG.outScreenGap;
+        this.screenYMax = this.cHeight + SpaceBG.outScreenGap;
+
         this.distanceLimit = this.cHeight / SpaceBG.distanceDivider;
     }
 
     //regenerate balls, if some of then locate out of visible part of display
     fillBalls = _ => {
-        let countDiff = this.balls.length - this.ballsCount;
+        let countDiff = SpaceBG.ballsCount -this.balls.length;
         if(countDiff > 0){
             while(countDiff--){
                 this.balls.push(this.generateBall());
@@ -117,14 +121,26 @@ export default class SpaceBG{
     }
 
     getDistance = (a, b) => {
+        if(b === undefined){
+            console.log(this);
+        }
         const x = (a.coordX - b.coordX) ** 2;
         const y = (a.coordY - b.coordY) ** 2;
 
         return Math.sqrt(x + y);
     }
 
+    updateBalls = _ => {
+        this.balls = this.balls.filter(ball => {
+            ball.coordX += ball.speedX;
+            ball.coordY += ball.speedY;
 
-
-
-
+            return (
+                ball.coordX > -SpaceBG.outScreenGap &&
+                ball.coordY > -SpaceBG.outScreenGap &&
+                ball.coordX < this.screenXMax &&
+                ball.coordY < this.screenYMax
+                );
+        });
+    }
 }
